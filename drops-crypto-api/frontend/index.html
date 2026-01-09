@@ -1,0 +1,1176 @@
+<!doctype html>
+<html lang="ru" data-lang="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Drops Crypto — Twitch OAuth + Wallet Drops</title>
+    <meta name="description"
+        content="Full-stack platform for crypto drops with Twitch OAuth and wallet integration. Mobile-first UX and scalable backend." />
+    <meta name="theme-color" content="#0b0b0c" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Drops Crypto" />
+    <meta property="og:description" content="Crypto drops for Twitch: OAuth, wallet linking, reward mechanics." />
+    <meta property="og:type" content="website" />
+
+    <!-- CSS вынесен во внешний файл -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+<!-- Custom cursor (desktop only) -->
+<div class="dc-cursor" aria-hidden="true">
+    <div class="dc-cursor-dot"></div>
+    <div class="dc-cursor-ring"></div>
+</div>
+<!-- Right-click Easter Egg -->
+<div id="dc-eegg" class="dc-eegg" aria-hidden="true">
+    <div class="dc-eegg-backdrop" data-eegg-close></div>
+
+    <div class="dc-eegg-card panel" role="dialog" aria-modal="true" aria-labelledby="dc-eegg-title">
+        <div class="panel-head">
+            <strong id="dc-eegg-title">Drops Console</strong>
+            <button type="button" class="btn small" data-eegg-close>Close</button>
+        </div>
+
+        <div class="panel-body">
+            <p class="muted2" style="margin:0 0 10px; font-size:12px;">
+                Right-click intercepted. If you were looking for “source”, here is something better.
+            </p>
+
+            <pre><code id="dc-eegg-output">Loading…</code></pre>
+
+            <div class="code-actions">
+                <button type="button" class="btn small" id="dc-eegg-more">More</button>
+                <a class="btn small" href="#start">Get started</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<body>
+    <header>
+        <div class="container">
+            <div class="nav">
+                <a class="brand" href="#top" aria-label="Drops Crypto">
+                    <div class="logo" aria-hidden="true"></div>
+                    <div class="brand-title">
+                        <strong>Drops Crypto</strong>
+                        <span class="muted2" data-i18n="ru">Twitch OAuth · Wallet · Drops</span>
+                        <span class="muted2" data-i18n="en">Twitch OAuth · Wallet · Drops</span>
+                        <span class="muted2" data-i18n="de">Twitch OAuth · Wallet · Drops</span>
+                        <span class="muted2" data-i18n="pl">Twitch OAuth · Wallet · Drops</span>
+                    </div>
+                </a>
+
+                <nav class="nav-links" aria-label="Навигация">
+                    <a href="#features" data-i18n="ru">Функции</a>
+                    <a href="#features" data-i18n="en">Features</a>
+                    <a href="#features" data-i18n="de">Features</a>
+                    <a href="#features" data-i18n="pl">Funkcje</a>
+
+                    <a href="#how" data-i18n="ru">Как работает</a>
+                    <a href="#how" data-i18n="en">How it works</a>
+                    <a href="#how" data-i18n="de">Ablauf</a>
+                    <a href="#how" data-i18n="pl">Jak działa</a>
+
+                    <a href="#stack" data-i18n="ru">Стек</a>
+                    <a href="#stack" data-i18n="en">Stack</a>
+                    <a href="#stack" data-i18n="de">Stack</a>
+                    <a href="#stack" data-i18n="pl">Stack</a>
+
+                    <a href="#start" data-i18n="ru">Запуск</a>
+                    <a href="#start" data-i18n="en">Get started</a>
+                    <a href="#start" data-i18n="de">Start</a>
+                    <a href="#start" data-i18n="pl">Start</a>
+
+                    <a href="#roadmap" data-i18n="ru">Roadmap</a>
+                    <a href="#roadmap" data-i18n="en">Roadmap</a>
+                    <a href="#roadmap" data-i18n="de">Roadmap</a>
+                    <a href="#roadmap" data-i18n="pl">Roadmap</a>
+                </nav>
+
+                <div class="nav-actions">
+                    <div class="lang" role="group" aria-label="Language switcher">
+                        <button type="button" class="lang-btn" data-lang="ru" aria-pressed="true">RU</button>
+                        <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+                        <button type="button" class="lang-btn" data-lang="de" aria-pressed="false">DE</button>
+                        <button type="button" class="lang-btn" data-lang="pl" aria-pressed="false">PL</button>
+                    </div>
+
+                    <!-- Замените href на ваш репозиторий/доку -->
+                    <a class="btn primary" href="#" target="_blank" rel="noreferrer">
+                        <span data-i18n="ru">Открыть репозиторий</span>
+                        <span data-i18n="en">Open repository</span>
+                        <span data-i18n="de">Repository öffnen</span>
+                        <span data-i18n="pl">Otwórz repo</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="top">
+        <!-- HERO -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-grid">
+                    <div>
+                        <div class="kicker">
+                            <span class="dot" aria-hidden="true"></span>
+                            <span data-i18n="ru">Full-stack платформа крипто-дропов для Twitch</span>
+                            <span data-i18n="en">Full-stack crypto drops platform for Twitch</span>
+                            <span data-i18n="de">Full-Stack Krypto-Drops für Twitch</span>
+                            <span data-i18n="pl">Full-stack platforma crypto drops dla Twitch</span>
+                        </div>
+
+                        <h1 data-i18n="ru">Вознаграждения за активность на стримах — с OAuth и привязкой кошелька</h1>
+                        <h1 data-i18n="en">Reward stream engagement — with OAuth and wallet linking</h1>
+                        <h1 data-i18n="de">Belohnungen für Stream-Aktivität — mit OAuth und Wallet-Verknüpfung</h1>
+                        <h1 data-i18n="pl">Nagrody za aktywność na streamach — z OAuth i podpięciem portfela</h1>
+
+                        <p class="subtitle" data-i18n="ru">
+                            Drops Crypto объединяет Twitch OAuth 2.0, JWT-авторизацию и EVM-ready привязку кошелька для
+                            Web3-механик наград.
+                            Mobile-first UX для iOS/Android и масштабируемый backend на NestJS.
+                        </p>
+                        <p class="subtitle" data-i18n="en">
+                            Drops Crypto combines Twitch OAuth 2.0, JWT auth, and EVM-ready wallet linking for Web3
+                            reward mechanics.
+                            Mobile-first UX for iOS/Android with a scalable NestJS backend.
+                        </p>
+                        <p class="subtitle" data-i18n="de">
+                            Drops Crypto kombiniert Twitch OAuth 2.0, JWT-Auth und EVM-fähiges Wallet-Linking für
+                            Web3-Belohnungen.
+                            Mobile-first UX für iOS/Android mit skalierbarem NestJS-Backend.
+                        </p>
+                        <p class="subtitle" data-i18n="pl">
+                            Drops Crypto łączy Twitch OAuth 2.0, JWT oraz EVM-ready podpinanie portfela dla mechanik
+                            nagród Web3.
+                            Mobile-first UX na iOS/Android i skalowalny backend w NestJS.
+                        </p>
+
+                        <div class="hero-ctas">
+                            <a class="btn primary" href="#start">
+                                <span data-i18n="ru">Запустить локально</span>
+                                <span data-i18n="en">Run locally</span>
+                                <span data-i18n="de">Lokal starten</span>
+                                <span data-i18n="pl">Uruchom lokalnie</span>
+                            </a>
+                            <a class="btn" href="#how">
+                                <span data-i18n="ru">Схема авторизации</span>
+                                <span data-i18n="en">Auth flow</span>
+                                <span data-i18n="de">Auth-Flow</span>
+                                <span data-i18n="pl">Flow logowania</span>
+                            </a>
+                            <a class="btn" href="#roadmap">
+                                <span data-i18n="ru">Посмотреть roadmap</span>
+                                <span data-i18n="en">View roadmap</span>
+                                <span data-i18n="de">Roadmap ansehen</span>
+                                <span data-i18n="pl">Zobacz roadmap</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <aside class="panel" aria-label="Highlights">
+                        <div class="panel-head">
+                            <strong data-i18n="ru">Ключевые возможности</strong>
+                            <strong data-i18n="en">Core highlights</strong>
+                            <strong data-i18n="de">Kern-Highlights</strong>
+                            <strong data-i18n="pl">Najważniejsze</strong>
+
+                            <span class="muted2" style="font-size:12px;">v0.x</span>
+                        </div>
+                        <div class="panel-body">
+                            <ul class="bullets">
+                                <li>
+                                    <span class="icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 7L10 17l-5-5"></path>
+                                        </svg>
+                                    </span>
+                                    <span data-i18n="ru"><strong>Twitch OAuth 2.0</strong> и безопасный callback через
+                                        Backend</span>
+                                    <span data-i18n="en"><strong>Twitch OAuth 2.0</strong> with secure backend
+                                        callback</span>
+                                    <span data-i18n="de"><strong>Twitch OAuth 2.0</strong> mit sicherem
+                                        Backend-Callback</span>
+                                    <span data-i18n="pl"><strong>Twitch OAuth 2.0</strong> z bezpiecznym callbackiem w
+                                        backendzie</span>
+                                </li>
+
+                                <li>
+                                    <span class="icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 1v22"></path>
+                                            <path d="M5 8h14"></path>
+                                            <path d="M5 16h14"></path>
+                                        </svg>
+                                    </span>
+                                    <span data-i18n="ru"><strong>JWT-авторизация</strong> с контролем сроков жизни
+                                        токенов</span>
+                                    <span data-i18n="en"><strong>JWT authorization</strong> with enforced
+                                        expiration</span>
+                                    <span data-i18n="de"><strong>JWT-Autorisierung</strong> mit erzwungener
+                                        Ablaufzeit</span>
+                                    <span data-i18n="pl"><strong>JWT</strong> z wymuszoną ekspiryacją</span>
+                                </li>
+
+                                <li>
+                                    <span class="icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M3 12h18"></path>
+                                            <path d="M12 3v18"></path>
+                                        </svg>
+                                    </span>
+                                    <span data-i18n="ru"><strong>Привязка кошелька</strong> (EVM-ready) к профилю
+                                        пользователя</span>
+                                    <span data-i18n="en"><strong>Wallet linking</strong> (EVM-ready) to user
+                                        identity</span>
+                                    <span data-i18n="de"><strong>Wallet-Verknüpfung</strong> (EVM-ready) zur
+                                        Nutzer-Identität</span>
+                                    <span data-i18n="pl"><strong>Podpięcie portfela</strong> (EVM-ready) do tożsamości
+                                        użytkownika</span>
+                                </li>
+
+                                <li>
+                                    <span class="icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path
+                                                d="M12 21s-6-4.35-9-8.5C.5 9 2 5.5 5.5 4.5 7.5 4 9.5 5 12 7c2.5-2 4.5-3 6.5-2.5C22 5.5 23.5 9 21 12.5 18 16.65 12 21 12 21z">
+                                            </path>
+                                        </svg>
+                                    </span>
+                                    <span data-i18n="ru"><strong>Награды (Drops)</strong> за engagement на стриме</span>
+                                    <span data-i18n="en"><strong>Drops rewards</strong> for stream engagement</span>
+                                    <span data-i18n="de"><strong>Drops-Belohnungen</strong> für Stream-Engagement</span>
+                                    <span data-i18n="pl"><strong>Nagrody (Drops)</strong> za aktywność na
+                                        streamie</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+
+        <!-- FEATURES -->
+        <section id="features">
+            <div class="container">
+                <div class="section-title">
+                    <h2 data-i18n="ru">Функции продукта</h2>
+                    <h2 data-i18n="en">Product features</h2>
+                    <h2 data-i18n="de">Produkt-Features</h2>
+                    <h2 data-i18n="pl">Funkcje produktu</h2>
+
+                    <p data-i18n="ru">Сфокусировано на стримерах, зрителях и Web3-механиках</p>
+                    <p data-i18n="en">Built for streamers, viewers, and Web3-native mechanics</p>
+                    <p data-i18n="de">Für Streamer, Zuschauer und Web3-Mechaniken</p>
+                    <p data-i18n="pl">Dla streamerów, widzów i mechanik Web3</p>
+                </div>
+
+                <div class="grid-3">
+                    <div class="card">
+                        <h3 data-i18n="ru">Twitch OAuth 2.0</h3>
+                        <h3 data-i18n="en">Twitch OAuth 2.0</h3>
+                        <h3 data-i18n="de">Twitch OAuth 2.0</h3>
+                        <h3 data-i18n="pl">Twitch OAuth 2.0</h3>
+
+                        <p data-i18n="ru">Подключение аккаунта Twitch с безопасным серверным callback и выдачей JWT.</p>
+                        <p data-i18n="en">Connect Twitch account with secure server callback and JWT issuance.</p>
+                        <p data-i18n="de">Twitch-Login mit sicherem Backend-Callback und JWT-Ausgabe.</p>
+                        <p data-i18n="pl">Logowanie przez Twitch z bezpiecznym callbackiem i JWT.</p>
+                    </div>
+
+                    <div class="card">
+                        <h3 data-i18n="ru">Wallet integration (EVM-ready)</h3>
+                        <h3 data-i18n="en">Wallet integration (EVM-ready)</h3>
+                        <h3 data-i18n="de">Wallet-Integration (EVM-ready)</h3>
+                        <h3 data-i18n="pl">Integracja portfela (EVM-ready)</h3>
+
+                        <p data-i18n="ru">Привязка кошелька к user identity. Основа для верификации и ончейн-интеграций.
+                        </p>
+                        <p data-i18n="en">Link wallet to user identity — foundation for verification and on-chain
+                            features.</p>
+                        <p data-i18n="de">Wallet an Nutzer-Identität binden — Grundlage für Verifikation und On-Chain.
+                        </p>
+                        <p data-i18n="pl">Powiązanie portfela z tożsamością — baza pod weryfikację i on-chain.</p>
+                    </div>
+
+                    <div class="card">
+                        <h3 data-i18n="ru">Drops logic</h3>
+                        <h3 data-i18n="en">Drops logic</h3>
+                        <h3 data-i18n="de">Drops-Logik</h3>
+                        <h3 data-i18n="pl">Logika dropsów</h3>
+
+                        <p data-i18n="ru">Награды за активность: просмотр, участие в чате, события стрима (расширяемо).
+                        </p>
+                        <p data-i18n="en">Rewards for engagement: watch, chat, stream events (extensible).</p>
+                        <p data-i18n="de">Belohnungen: Zuschauen, Chat, Stream-Events (erweiterbar).</p>
+                        <p data-i18n="pl">Nagrody za zaangażowanie: oglądanie, chat, eventy (rozszerzalne).</p>
+                    </div>
+
+                    <div class="card">
+                        <h3 data-i18n="ru">Mobile-first UX</h3>
+                        <h3 data-i18n="en">Mobile-first UX</h3>
+                        <h3 data-i18n="de">Mobile-first UX</h3>
+                        <h3 data-i18n="pl">Mobile-first UX</h3>
+
+                        <p data-i18n="ru">React Native + Expo: быстрый старт, единый код для iOS/Android.</p>
+                        <p data-i18n="en">React Native + Expo: fast iteration, single codebase for iOS/Android.</p>
+                        <p data-i18n="de">React Native + Expo: schneller Start, ein Code für iOS/Android.</p>
+                        <p data-i18n="pl">React Native + Expo: szybki start, jeden kod na iOS/Android.</p>
+                    </div>
+
+                    <div class="card">
+                        <h3 data-i18n="ru">Scalable backend</h3>
+                        <h3 data-i18n="en">Scalable backend</h3>
+                        <h3 data-i18n="de">Skalierbares Backend</h3>
+                        <h3 data-i18n="pl">Skalowalny backend</h3>
+
+                        <p data-i18n="ru">NestJS + Prisma + PostgreSQL, удобная архитектура для расширения.</p>
+                        <p data-i18n="en">NestJS + Prisma + PostgreSQL, architecture built to scale.</p>
+                        <p data-i18n="de">NestJS + Prisma + PostgreSQL, auf Wachstum ausgelegt.</p>
+                        <p data-i18n="pl">NestJS + Prisma + PostgreSQL, architektura pod skalowanie.</p>
+                    </div>
+
+                    <div class="card">
+                        <h3 data-i18n="ru">Security by default</h3>
+                        <h3 data-i18n="en">Security by default</h3>
+                        <h3 data-i18n="de">Security by default</h3>
+                        <h3 data-i18n="pl">Security by default</h3>
+
+                        <p data-i18n="ru">Секреты в .env, OAuth tokens не уходят на клиент, JWT с expiration.</p>
+                        <p data-i18n="en">Secrets in .env, OAuth tokens never exposed to client, JWT expiration
+                            enforced.</p>
+                        <p data-i18n="de">Secrets in .env, OAuth-Tokens nicht im Client, JWT-Ablauf erzwungen.</p>
+                        <p data-i18n="pl">Sekrety w .env, tokeny OAuth nie trafiają do klienta, JWT z expiracją.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HOW IT WORKS -->
+        <section id="how">
+            <div class="container">
+                <div class="section-title">
+                    <h2 data-i18n="ru">Как это работает</h2>
+                    <h2 data-i18n="en">How it works</h2>
+                    <h2 data-i18n="de">Wie es funktioniert</h2>
+                    <h2 data-i18n="pl">Jak to działa</h2>
+
+                    <p data-i18n="ru">Auth Flow и Data Flow на одном экране</p>
+                    <p data-i18n="en">Auth flow + data flow in one view</p>
+                    <p data-i18n="de">Auth-Flow + Data-Flow auf einen Blick</p>
+                    <p data-i18n="pl">Auth flow + data flow w jednym miejscu</p>
+                </div>
+
+                <div class="split">
+                    <div class="panel">
+                        <div class="panel-head">
+                            <strong data-i18n="ru">Auth Flow</strong>
+                            <strong data-i18n="en">Auth Flow</strong>
+                            <strong data-i18n="de">Auth-Flow</strong>
+                            <strong data-i18n="pl">Auth Flow</strong>
+                        </div>
+                        <div class="panel-body">
+                            <div class="flow">
+                                <div class="step">
+                                    <span class="badge">1</span>
+                                    <div class="text">
+                                        <strong data-i18n="ru">Connect Twitch</strong>
+                                        <strong data-i18n="en">Connect Twitch</strong>
+                                        <strong data-i18n="de">Twitch verbinden</strong>
+                                        <strong data-i18n="pl">Połącz Twitch</strong>
+                                        <div class="muted">OAuth redirect</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="badge">2</span>
+                                    <div class="text">
+                                        <strong data-i18n="ru">Redirect на Twitch</strong>
+                                        <strong data-i18n="en">Redirect to Twitch</strong>
+                                        <strong data-i18n="de">Weiterleitung zu Twitch</strong>
+                                        <strong data-i18n="pl">Przekierowanie do Twitch</strong>
+                                        <div class="muted">User grants access</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="badge">3</span>
+                                    <div class="text">
+                                        <strong data-i18n="ru">Callback в Backend</strong>
+                                        <strong data-i18n="en">Backend callback</strong>
+                                        <strong data-i18n="de">Backend-Callback</strong>
+                                        <strong data-i18n="pl">Callback w backendzie</strong>
+                                        <div class="muted">Server exchanges code → tokens</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="badge">4</span>
+                                    <div class="text">
+                                        <strong data-i18n="ru">Выдача JWT</strong>
+                                        <strong data-i18n="en">JWT issued</strong>
+                                        <strong data-i18n="de">JWT ausgestellt</strong>
+                                        <strong data-i18n="pl">Wydanie JWT</strong>
+                                        <div class="muted">JWT returned to the app</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-head">
+                            <strong data-i18n="ru">Data Flow</strong>
+                            <strong data-i18n="en">Data Flow</strong>
+                            <strong data-i18n="de">Data-Flow</strong>
+                            <strong data-i18n="pl">Data Flow</strong>
+                        </div>
+                        <div class="panel-body">
+                            <div class="flow">
+                                <div class="step">
+                                    <span class="badge">A</span>
+                                    <div class="text">
+                                        <strong data-i18n="ru">App → API</strong>
+                                        <strong data-i18n="en">App → API</strong>
+                                        <strong data-i18n="de">App → API</strong>
+                                        <strong data-i18n="pl">App → API</strong>
+                                        <div class="muted">Authorization: Bearer &lt;JWT&gt;</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="badge">B</span>
+                                    <div class="text">
+                                        <strong data-i18n="ru">API → PostgreSQL</strong>
+                                        <strong data-i18n="en">API → PostgreSQL</strong>
+                                        <strong data-i18n="de">API → PostgreSQL</strong>
+                                        <strong data-i18n="pl">API → PostgreSQL</strong>
+                                        <div class="muted">Prisma ORM</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="badge">C</span>
+                                    <div class="text">
+                                        <strong data-i18n="ru">Wallets ↔ Identity</strong>
+                                        <strong data-i18n="en">Wallets ↔ Identity</strong>
+                                        <strong data-i18n="de">Wallets ↔ Identität</strong>
+                                        <strong data-i18n="pl">Portfel ↔ Tożsamość</strong>
+                                        <div class="muted">Wallets linked to user profile</div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="badge">D</span>
+                                    <div class="text">
+                                        <strong data-i18n="ru">Rewards</strong>
+                                        <strong data-i18n="en">Rewards</strong>
+                                        <strong data-i18n="de">Rewards</strong>
+                                        <strong data-i18n="pl">Nagrody</strong>
+                                        <div class="muted">Drops rules compute earnings</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="margin-top:14px" class="panel">
+                    <div class="panel-head">
+                        <strong data-i18n="ru">Структура проекта</strong>
+                        <strong data-i18n="en">Project structure</strong>
+                        <strong data-i18n="de">Projektstruktur</strong>
+                        <strong data-i18n="pl">Struktura projektu</strong>
+                        <span class="muted2" style="font-size:12px;">monorepo</span>
+                    </div>
+                    <div class="panel-body">
+                        <pre><code>drops-crypto/
+├── drops-crypto-api/   # Backend (NestJS, Prisma, PostgreSQL)
+├── drops-crypto-app/   # Mobile App (React Native, Expo)
+└── README.md</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STACK -->
+        <section id="stack">
+            <div class="container">
+                <div class="section-title">
+                    <h2 data-i18n="ru">Технологический стек</h2>
+                    <h2 data-i18n="en">Technology stack</h2>
+                    <h2 data-i18n="de">Technologie-Stack</h2>
+                    <h2 data-i18n="pl">Stack technologiczny</h2>
+
+                    <p data-i18n="ru">Backend + Mobile</p>
+                    <p data-i18n="en">Backend + Mobile</p>
+                    <p data-i18n="de">Backend + Mobile</p>
+                    <p data-i18n="pl">Backend + Mobile</p>
+                </div>
+
+                <div class="split">
+                    <div class="card">
+                        <h3 data-i18n="ru">Backend</h3>
+                        <h3 data-i18n="en">Backend</h3>
+                        <h3 data-i18n="de">Backend</h3>
+                        <h3 data-i18n="pl">Backend</h3>
+                        <p class="muted" style="margin-top:6px">
+                            NestJS · Prisma ORM · PostgreSQL · Docker/Compose · Twitch OAuth 2.0 · JWT
+                        </p>
+                    </div>
+                    <div class="card">
+                        <h3 data-i18n="ru">Mobile</h3>
+                        <h3 data-i18n="en">Mobile</h3>
+                        <h3 data-i18n="de">Mobile</h3>
+                        <h3 data-i18n="pl">Mobile</h3>
+                        <p class="muted" style="margin-top:6px">
+                            React Native · Expo · TypeScript · iOS/Android
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- GET STARTED -->
+        <section id="start">
+            <div class="container">
+                <div class="section-title">
+                    <h2 data-i18n="ru">Установка и запуск</h2>
+                    <h2 data-i18n="en">Getting started</h2>
+                    <h2 data-i18n="de">Installation & Start</h2>
+                    <h2 data-i18n="pl">Instalacja i start</h2>
+
+                    <p data-i18n="ru">Локальная разработка за несколько команд</p>
+                    <p data-i18n="en">Local dev in a few commands</p>
+                    <p data-i18n="de">Lokale Entwicklung in wenigen Befehlen</p>
+                    <p data-i18n="pl">Uruchomienie lokalne w kilku komendach</p>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <strong data-i18n="ru">Команды</strong>
+                        <strong data-i18n="en">Commands</strong>
+                        <strong data-i18n="de">Befehle</strong>
+                        <strong data-i18n="pl">Komendy</strong>
+
+                        <span class="muted2" style="font-size:12px;" data-i18n="ru">переключите вкладку</span>
+                        <span class="muted2" style="font-size:12px;" data-i18n="en">switch tab</span>
+                        <span class="muted2" style="font-size:12px;" data-i18n="de">Tab wechseln</span>
+                        <span class="muted2" style="font-size:12px;" data-i18n="pl">zmień zakładkę</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="tabs" role="tablist" aria-label="Startup tabs">
+                            <button class="tab" type="button" role="tab" aria-selected="true" data-tab="backend">
+                                <span data-i18n="ru">Backend</span>
+                                <span data-i18n="en">Backend</span>
+                                <span data-i18n="de">Backend</span>
+                                <span data-i18n="pl">Backend</span>
+                            </button>
+                            <button class="tab" type="button" role="tab" aria-selected="false"
+                                data-tab="ngrok">ngrok</button>
+                            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="mobile">
+                                <span data-i18n="ru">Mobile App</span>
+                                <span data-i18n="en">Mobile App</span>
+                                <span data-i18n="de">Mobile App</span>
+                                <span data-i18n="pl">Mobile App</span>
+                            </button>
+                            <button class="tab" type="button" role="tab" aria-selected="false" data-tab="check">
+                                <span data-i18n="ru">Проверка</span>
+                                <span data-i18n="en">Verify</span>
+                                <span data-i18n="de">Check</span>
+                                <span data-i18n="pl">Weryfikacja</span>
+                            </button>
+                        </div>
+
+                        <div class="tab-panels">
+                            <div class="tab-panel" data-panel="backend">
+                                <pre><code>cd drops-crypto-api
+npm install
+docker compose up -d
+cp .env.example .env
+npx prisma migrate dev --name init
+npm run start:dev
+
+# API: http://localhost:3000</code></pre>
+                                <div class="code-actions">
+                                    <button class="btn small" type="button" data-copy="backend">
+                                        <span data-i18n="ru">Скопировать</span>
+                                        <span data-i18n="en">Copy</span>
+                                        <span data-i18n="de">Kopieren</span>
+                                        <span data-i18n="pl">Kopiuj</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="tab-panel" data-panel="ngrok" style="display:none">
+                                <pre><code>ngrok http 3000
+
+# затем обновите .env:
+PUBLIC_BASE_URL=https://xxxx.ngrok.io
+TWITCH_REDIRECT_URI=https://xxxx.ngrok.io/auth/twitch/callback
+
+# добавьте Redirect URL в Twitch Developer Console</code></pre>
+                                <div class="code-actions">
+                                    <button class="btn small" type="button" data-copy="ngrok">
+                                        <span data-i18n="ru">Скопировать</span>
+                                        <span data-i18n="en">Copy</span>
+                                        <span data-i18n="de">Kopieren</span>
+                                        <span data-i18n="pl">Kopiuj</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="tab-panel" data-panel="mobile" style="display:none">
+                                <pre><code>cd drops-crypto-app
+npm install
+npm start
+
+# обновите API_BASE в App.tsx
+# используйте Expo Go или эмулятор</code></pre>
+                                <div class="code-actions">
+                                    <button class="btn small" type="button" data-copy="mobile">
+                                        <span data-i18n="ru">Скопировать</span>
+                                        <span data-i18n="en">Copy</span>
+                                        <span data-i18n="de">Kopieren</span>
+                                        <span data-i18n="pl">Kopiuj</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="tab-panel" data-panel="check" style="display:none">
+                                <pre><code># чек-лист:
+GET /health отвечает
+Twitch OAuth успешен
+JWT возвращается в приложение</code></pre>
+                                <div class="code-actions">
+                                    <button class="btn small" type="button" data-copy="check">
+                                        <span data-i18n="ru">Скопировать</span>
+                                        <span data-i18n="en">Copy</span>
+                                        <span data-i18n="de">Kopieren</span>
+                                        <span data-i18n="pl">Kopiuj</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="muted2" style="margin:12px 0 0; font-size:12px;" data-i18n="ru">
+                            Примечание: ссылки на репозиторий/документацию в шапке замените на ваши реальные URL.
+                        </p>
+                        <p class="muted2" style="margin:12px 0 0; font-size:12px;" data-i18n="en">
+                            Note: replace repository/docs links in header with your real URLs.
+                        </p>
+                        <p class="muted2" style="margin:12px 0 0; font-size:12px;" data-i18n="de">
+                            Hinweis: Ersetzen Sie die Repository/Docs-Links im Header durch echte URLs.
+                        </p>
+                        <p class="muted2" style="margin:12px 0 0; font-size:12px;" data-i18n="pl">
+                            Uwaga: podmień linki repo/dokumentacji w nagłówku na właściwe URL.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap">
+            <div class="container">
+                <div class="section-title">
+                    <h2>Roadmap</h2>
+
+                    <p class="muted2" data-i18n="ru">Ближайшие расширения</p>
+                    <p class="muted2" data-i18n="en">Planned expansions</p>
+                    <p class="muted2" data-i18n="de">Geplante Erweiterungen</p>
+                    <p class="muted2" data-i18n="pl">Planowane rozszerzenia</p>
+                </div>
+
+                <div class="timeline">
+                    <div class="step">
+                        <span class="badge">R1</span>
+                        <div class="text">
+                            <strong data-i18n="ru">Профили пользователей</strong>
+                            <strong data-i18n="en">User profiles</strong>
+                            <strong data-i18n="de">Nutzerprofile</strong>
+                            <strong data-i18n="pl">Profile użytkowników</strong>
+                            <div class="muted">Public profiles, settings, linked wallets</div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <span class="badge">R2</span>
+                        <div class="text">
+                            <strong data-i18n="ru">Верификация кошелька</strong>
+                            <strong data-i18n="en">Wallet verification</strong>
+                            <strong data-i18n="de">Wallet-Verifikation</strong>
+                            <strong data-i18n="pl">Weryfikacja portfela</strong>
+                            <div class="muted">Sign message / SIWE-style proof (implementation-dependent)</div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <span class="badge">R3</span>
+                        <div class="text">
+                            <strong data-i18n="ru">Дашборды стримеров</strong>
+                            <strong data-i18n="en">Streamer dashboards</strong>
+                            <strong data-i18n="de">Streamer-Dashboards</strong>
+                            <strong data-i18n="pl">Dashboardy streamerów</strong>
+                            <div class="muted">Campaigns, rules, analytics</div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <span class="badge">R4</span>
+                        <div class="text">
+                            <strong data-i18n="ru">Интеграция смарт-контрактов</strong>
+                            <strong data-i18n="en">Smart contract integration</strong>
+                            <strong data-i18n="de">Smart-Contract-Integration</strong>
+                            <strong data-i18n="pl">Integracja smart kontraktów</strong>
+                            <div class="muted">On-chain rewards, claim flows</div>
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <span class="badge">R5</span>
+                        <div class="text">
+                            <strong>Production deployment</strong>
+                            <div class="muted">CI/CD, secrets management, monitoring</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECURITY & LICENSE -->
+        <section id="security">
+            <div class="container">
+                <div class="split">
+                    <div class="panel">
+                        <div class="panel-head">
+                            <strong data-i18n="ru">Безопасность</strong>
+                            <strong data-i18n="en">Security</strong>
+                            <strong data-i18n="de">Sicherheit</strong>
+                            <strong data-i18n="pl">Bezpieczeństwo</strong>
+                        </div>
+                        <div class="panel-body">
+                            <ul class="bullets">
+                                <li>
+                                    <span class="icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                        </svg>
+                                    </span>
+                                    <span data-i18n="ru">Секреты хранятся в <span
+                                            style="font-family:var(--mono)">.env</span></span>
+                                    <span data-i18n="en">Secrets stored in <span
+                                            style="font-family:var(--mono)">.env</span></span>
+                                    <span data-i18n="de">Secrets in <span
+                                            style="font-family:var(--mono)">.env</span></span>
+                                    <span data-i18n="pl">Sekrety w <span
+                                            style="font-family:var(--mono)">.env</span></span>
+                                </li>
+                                <li>
+                                    <span class="icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 1l3 5 5 .7-3.8 3.7.9 5.6L12 13.8 6.9 16l.9-5.6L4 6.7 9 6z">
+                                            </path>
+                                        </svg>
+                                    </span>
+                                    <span data-i18n="ru">OAuth-токены не экспонируются на клиент</span>
+                                    <span data-i18n="en">OAuth tokens are never exposed to the client</span>
+                                    <span data-i18n="de">OAuth-Tokens werden nicht im Client offengelegt</span>
+                                    <span data-i18n="pl">Tokeny OAuth nie trafiają do klienta</span>
+                                </li>
+                                <li>
+                                    <span class="icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M17 9V7a5 5 0 00-10 0v2"></path>
+                                            <rect x="5" y="9" width="14" height="12" rx="2"></rect>
+                                        </svg>
+                                    </span>
+                                    <span data-i18n="ru">JWT-сессии имеют срок действия (expiration)</span>
+                                    <span data-i18n="en">JWT sessions have enforced expiration</span>
+                                    <span data-i18n="de">JWT-Sessions mit erzwungener Ablaufzeit</span>
+                                    <span data-i18n="pl">JWT z wymuszoną ekspiryacją</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-head">
+                            <strong data-i18n="ru">Лицензия</strong>
+                            <strong data-i18n="en">License</strong>
+                            <strong data-i18n="de">Lizenz</strong>
+                            <strong data-i18n="pl">Licencja</strong>
+                        </div>
+                        <div class="panel-body">
+                            <p class="muted" style="margin:0 0 10px" data-i18n="ru">
+                                Проект распространяется по MIT License. Добавьте файл <span
+                                    style="font-family:var(--mono)">LICENSE</span> и <span
+                                    style="font-family:var(--mono)">SECURITY.md</span> в репозиторий.
+                            </p>
+                            <p class="muted" style="margin:0 0 10px" data-i18n="en">
+                                Distributed under the MIT License. Add <span
+                                    style="font-family:var(--mono)">LICENSE</span> and <span
+                                    style="font-family:var(--mono)">SECURITY.md</span> to the repo.
+                            </p>
+                            <p class="muted" style="margin:0 0 10px" data-i18n="de">
+                                Unter MIT-Lizenz. Fügen Sie <span style="font-family:var(--mono)">LICENSE</span> und
+                                <span style="font-family:var(--mono)">SECURITY.md</span> hinzu.
+                            </p>
+                            <p class="muted" style="margin:0 0 10px" data-i18n="pl">
+                                Licencja MIT. Dodaj pliki <span style="font-family:var(--mono)">LICENSE</span> i <span
+                                    style="font-family:var(--mono)">SECURITY.md</span> do repo.
+                            </p>
+
+                            <div class="code-actions">
+                                <a class="btn small" href="#top">
+                                    <span data-i18n="ru">Наверх</span>
+                                    <span data-i18n="en">Back to top</span>
+                                    <span data-i18n="de">Nach oben</span>
+                                    <span data-i18n="pl">Do góry</span>
+                                </a>
+                                <a class="btn small" href="#features">
+                                    <span data-i18n="ru">Функции</span>
+                                    <span data-i18n="en">Features</span>
+                                    <span data-i18n="de">Features</span>
+                                    <span data-i18n="pl">Funkcje</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <strong>Drops Crypto</strong>
+                    <p class="muted" style="margin:8px 0 0" data-i18n="ru">
+                        Full-stack платформа для крипто-дропов на Twitch: OAuth, JWT, wallet integration и награды за
+                        активность.
+                    </p>
+                    <p class="muted" style="margin:8px 0 0" data-i18n="en">
+                        Full-stack platform for Twitch crypto drops: OAuth, JWT, wallet integration, and engagement
+                        rewards.
+                    </p>
+                    <p class="muted" style="margin:8px 0 0" data-i18n="de">
+                        Full-Stack-Plattform für Twitch Krypto-Drops: OAuth, JWT, Wallet-Integration und Rewards.
+                    </p>
+                    <p class="muted" style="margin:8px 0 0" data-i18n="pl">
+                        Full-stack platforma crypto drops na Twitch: OAuth, JWT, integracja portfela i nagrody.
+                    </p>
+                </div>
+                <div>
+                    <p class="muted2" style="margin:0; font-size:12px;">
+                        © 2026 Drops Crypto · MIT License
+                    </p>
+                    <p class="muted2" style="margin:10px 0 0; font-size:12px;">
+                        <!-- Замените на реальные ссылки -->
+                        <a href="#" class="muted2">GitHub</a> ·
+                        <a href="#" class="muted2">Docs</a> ·
+                        <a href="#" class="muted2">SECURITY.md</a>
+                    </p>
+                    <p class="muted2" style="margin:10px 0 0; font-size:12px;">
+                        <span data-i18n="ru">Разработчики:</span>
+                        <span data-i18n="en">Developers:</span>
+                        <span data-i18n="de">Entwickler:</span>
+                        <span data-i18n="pl">Twórcy:</span>
+
+                        <a href="https://github.com/tiktak6828" class="muted2" target="_blank" rel="noreferrer">Andrii
+                            Zorkin</a>
+                        ·
+                        <a href="https://github.com/Eric-Lebedenko" class="muted2" target="_blank" rel="noreferrer">Eric
+                            Lebedenko (Eric L. Morgan)</a>
+                    </p>
+
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // -------- Language switcher --------
+        (function () {
+            const root = document.documentElement;
+            const buttons = Array.from(document.querySelectorAll('.lang-btn'));
+
+            function setLang(lang) {
+                root.setAttribute('data-lang', lang);
+                root.setAttribute('lang', lang);
+
+                buttons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+
+                try { localStorage.setItem('dc_lang', lang); } catch (e) { }
+            }
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => setLang(btn.dataset.lang));
+            });
+
+            // restore
+            let saved = null;
+            try { saved = localStorage.getItem('dc_lang'); } catch (e) { }
+            if (saved && ['ru', 'en', 'de', 'pl'].includes(saved)) setLang(saved);
+        })();
+
+        // -------- Tabs --------
+        (function () {
+            const tabs = Array.from(document.querySelectorAll('.tab'));
+            const panels = Array.from(document.querySelectorAll('.tab-panel'));
+
+            function show(tabName) {
+                tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === tabName)));
+                panels.forEach(p => p.style.display = (p.dataset.panel === tabName ? 'block' : 'none'));
+            }
+
+            tabs.forEach(t => t.addEventListener('click', () => show(t.dataset.tab)));
+        })();
+
+        // -------- Copy buttons --------
+        (function () {
+            const map = {
+                backend: `cd drops-crypto-api
+npm install
+docker compose up -d
+cp .env.example .env
+npx prisma migrate dev --name init
+npm run start:dev
+
+# API: http://localhost:3000`,
+                ngrok: `ngrok http 3000
+
+PUBLIC_BASE_URL=https://xxxx.ngrok.io
+TWITCH_REDIRECT_URI=https://xxxx.ngrok.io/auth/twitch/callback`,
+                mobile: `cd drops-crypto-app
+npm install
+npm start
+
+# update API_BASE in App.tsx`,
+                check: `GET /health responds
+Twitch OAuth succeeds
+JWT is returned to the app`
+            };
+
+            document.querySelectorAll('[data-copy]').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const key = btn.getAttribute('data-copy');
+                    const text = map[key] || '';
+                    if (!text) return;
+
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        const prev = btn.textContent;
+                        btn.textContent = 'Copied';
+                        setTimeout(() => { btn.textContent = prev; }, 900);
+                    } catch (e) {
+                        // fallback
+                        const ta = document.createElement('textarea');
+                        ta.value = text; document.body.appendChild(ta);
+                        ta.select(); document.execCommand('copy');
+                        ta.remove();
+                    }
+                });
+            });
+        })();
+
+        // -------- Smooth scroll --------
+        (function () {
+            document.querySelectorAll('a[href^="#"]').forEach(a => {
+                a.addEventListener('click', (e) => {
+                    const id = a.getAttribute('href');
+                    if (!id || id === '#') return;
+                    const el = document.querySelector(id);
+                    if (!el) return;
+                    e.preventDefault();
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    history.pushState(null, '', id);
+                });
+            });
+        })();
+        // ===== Custom cursor (desktop only) =====
+        (function () {
+            const cursor = document.querySelector('.dc-cursor');
+            if (!cursor) return;
+
+            const dot = cursor.querySelector('.dc-cursor-dot');
+            const ring = cursor.querySelector('.dc-cursor-ring');
+
+            const isDesktopFinePointer =
+                window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+            if (!isDesktopFinePointer) return;
+
+            let targetX = window.innerWidth / 2;
+            let targetY = window.innerHeight / 2;
+
+            let dotX = targetX, dotY = targetY;
+            let ringX = targetX, ringY = targetY;
+
+            const dotSpeed = 0.35;   // faster
+            const ringSpeed = 0.16;  // smoother / trailing
+
+            function raf() {
+                dotX += (targetX - dotX) * dotSpeed;
+                dotY += (targetY - dotY) * dotSpeed;
+
+                ringX += (targetX - ringX) * ringSpeed;
+                ringY += (targetY - ringY) * ringSpeed;
+
+                dot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0) translate3d(-50%, -50%, 0)`;
+                ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate3d(-50%, -50%, 0)`;
+
+                requestAnimationFrame(raf);
+            }
+
+            window.addEventListener('pointermove', (e) => {
+                targetX = e.clientX;
+                targetY = e.clientY;
+                cursor.classList.remove('is-hidden');
+            }, { passive: true });
+
+            window.addEventListener('pointerdown', () => cursor.classList.add('is-down'));
+            window.addEventListener('pointerup', () => cursor.classList.remove('is-down'));
+
+            window.addEventListener('blur', () => cursor.classList.add('is-hidden'));
+            window.addEventListener('mouseout', (e) => {
+                if (!e.relatedTarget && !e.toElement) cursor.classList.add('is-hidden');
+            });
+
+            // Hover detection for interactive elements
+            const hoverSelector = 'a, button, [role="button"], .btn, .tab, .lang button, input, textarea, select';
+            document.addEventListener('pointerover', (e) => {
+                if (e.target && e.target.closest && e.target.closest(hoverSelector)) {
+                    cursor.classList.add('is-hover');
+                }
+            }, { passive: true });
+
+            document.addEventListener('pointerout', (e) => {
+                if (e.target && e.target.closest && e.target.closest(hoverSelector)) {
+                    cursor.classList.remove('is-hover');
+                }
+            }, { passive: true });
+
+            requestAnimationFrame(raf);
+        })();
+        // ===== Right-click Easter Egg =====
+        (function () {
+            const modal = document.getElementById('dc-eegg');
+            const card = modal?.querySelector('.dc-eegg-card');
+            const out = document.getElementById('dc-eegg-output');
+            const btnMore = document.getElementById('dc-eegg-more');
+
+            if (!modal || !card || !out || !btnMore) return;
+
+            const messages = [
+                [
+                    ">> Drops Crypto / interactive shell",
+                    "status: ONLINE",
+                    "auth: Twitch OAuth 2.0 → callback → JWT",
+                    "wallet: EVM-ready binding (identity ↔ address)",
+                    "drops: engagement rules engine",
+                    "",
+                    "tip: build trust, not walls."
+                ].join("\n"),
+                [
+                    "┌─────────────────────────────────────┐",
+                    "│  Nice try. Frontend is transparent. │",
+                    "│  Real security lives on the backend │",
+                    "│  and in secrets management.         │",
+                    "└─────────────────────────────────────┘",
+                    "",
+                    "Next quest: open /start and run locally."
+                ].join("\n"),
+                [
+                    "ASCII DROP:",
+                    "   *     .     *",
+                    "     .  ( )  .",
+                    "   *  . ( ) .  *",
+                    "        '",
+                    "",
+                    "You found the hidden reward: +1 curiosity."
+                ].join("\n"),
+                [
+                    "Checklist:",
+                    "- Keep OAuth client secret server-side",
+                    "- Use short-lived JWT + refresh strategy",
+                    "- Rate-limit endpoints",
+                    "- Turn off source maps in production build"
+                ].join("\n")
+            ];
+
+            let idx = 0;
+
+            function clamp(n, min, max) {
+                return Math.max(min, Math.min(max, n));
+            }
+
+            function render() {
+                out.textContent = messages[idx % messages.length];
+            }
+
+            function openAt(x, y) {
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden', 'false');
+
+                // Position near cursor, but keep inside viewport
+                const vw = window.innerWidth;
+                const vh = window.innerHeight;
+
+                // Force layout to get card size
+                card.style.left = '0px';
+                card.style.top = '0px';
+                const rect = card.getBoundingClientRect();
+
+                const margin = 16;
+                const left = clamp(x + 12, margin, vw - rect.width - margin);
+                const top = clamp(y + 12, margin, vh - rect.height - margin);
+
+                card.style.left = `${left}px`;
+                card.style.top = `${top}px`;
+
+                render();
+                btnMore.focus({ preventScroll: true });
+            }
+
+            function close() {
+                modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+
+            // Intercept right click
+            document.addEventListener('contextmenu', (e) => {
+                // Optional: allow normal menu in inputs/textarea for usability
+                const allow = e.target.closest('input, textarea, [contenteditable="true"]');
+                if (allow) return;
+
+                e.preventDefault();
+                openAt(e.clientX, e.clientY);
+            });
+
+            // Close handlers
+            modal.addEventListener('click', (e) => {
+                const isClose = e.target && (e.target.matches('[data-eegg-close]') || e.target.closest('[data-eegg-close]'));
+                if (isClose) close();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('is-open')) close();
+            });
+
+            btnMore.addEventListener('click', () => {
+                idx++;
+                render();
+            });
+        })();
+        document.addEventListener("keydown", function (e) {
+            if (e.keyCode === 123 ||
+                (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+                (e.ctrlKey && e.keyCode === 85)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+</body>
+
+</html>
