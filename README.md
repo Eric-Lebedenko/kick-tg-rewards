@@ -200,6 +200,8 @@ For major changes, please open an issue first to discuss what you would like to 
 - JWT expiration enforced
 
 ---
+## 🔐 Security
+Please see [SECURITY.md](./SECURITY.md) for vulnerability reporting.
 
 ## 📄 License
 
