@@ -1,66 +1,108 @@
-# Drops Crypto
+# 🎮 Drops Crypto
 
-Полный стек приложения для Drops криптой с Twitch OAuth и кошельками.
+**Full-stack application for crypto drops with Twitch OAuth and wallet integration.**  
+Built for streamers, viewers, and crypto-native reward mechanics.
 
-## Структура проекта
+---
 
-- `drops-crypto-api/` - Backend на NestJS
-- `drops-crypto-app/` - Мобильное приложение на React Native + Expo
+## 🌍 Languages / Языки / Sprachen / Języki
 
-## Быстрый старт
+- [🇷🇺 Русский](#-русский)
+- [🇬🇧 English](#-english)
+- [🇩🇪 Deutsch](#-deutsch)
+- [🇵🇱 Polski](#-polski)
 
-### 1. Backend
+---
+
+## 🧭 Project Navigation
+
+- [`drops-crypto-api/`](./drops-crypto-api) — Backend (NestJS, Prisma, PostgreSQL)
+- [`drops-crypto-app/`](./drops-crypto-app) — Mobile App (React Native, Expo)
+
+---
+
+## 🇷🇺 Русский
+
+### 📌 Описание
+
+**Drops Crypto** — это full-stack платформа для крипто-дропов, интегрированная с Twitch OAuth и пользовательскими кошельками.  
+Пользователи могут авторизоваться через Twitch, участвовать в стримах и получать награды.
+
+---
+
+### 🧱 Стек технологий
+
+**Backend**
+- NestJS
+- Prisma ORM
+- PostgreSQL
+- Docker
+- Twitch OAuth 2.0
+
+**Mobile**
+- React Native
+- Expo
+- TypeScript
+
+---
+
+### 🚀 Быстрый старт
+
+#### Backend
 
 ```bash
 cd drops-crypto-api
 npm install
 docker compose up -d
 cp .env.example .env
-# Отредактируйте .env с вашими ключами Twitch
 npx prisma migrate dev --name init
 npm run start:dev
 ```
 
-### 2. ngrok
+---
 
-В отдельном терминале:
+#### ngrok
 
 ```bash
 ngrok http 3000
 ```
 
-Скопируйте https URL и обновите в `drops-crypto-api/.env`:
-- `PUBLIC_BASE_URL`
-- `TWITCH_REDIRECT_URI`
+---
 
-Также добавьте этот URL в Twitch Developer Console как Redirect URL.
-
-### 3. Мобильное приложение
+#### Mobile App
 
 ```bash
 cd drops-crypto-app
 npm install
-# Обновите API_BASE в App.tsx на ваш ngrok URL
 npm start
 ```
 
-Отсканируйте QR код в Expo Go или запустите на эмуляторе.
+---
 
-## Контрольная точка
+## 🇬🇧 English
 
-После настройки проверьте:
+### 📌 Overview
 
-1. ✅ Backend запущен на `localhost:3000`
-2. ✅ ngrok показывает публичный URL
-3. ✅ `/health` доступен с телефона через ngrok URL
-4. ✅ Twitch OAuth настроен в Developer Console
-5. ✅ Приложение открывает Twitch login при нажатии "Привязать Twitch"
-6. ✅ После логина возвращается в приложение с токеном
+**Drops Crypto** is a full-stack platform for crypto drops integrated with Twitch OAuth and user wallets.
 
-## Следующие шаги
+---
 
-После успешной проверки контрольной точки:
-- Добавить навигацию (Profile/Streamers/Prizes)
-- Запрос `/me` с авторизацией
-- Экран добавления кошелька
-- UI похожий на референс
+## 🇩🇪 Deutsch
+
+### 📌 Beschreibung
+
+**Drops Crypto** ist eine Full-Stack-Anwendung für Krypto-Drops mit Twitch-OAuth-Integration.
+
+---
+
+## 🇵🇱 Polski
+
+### 📌 Opis
+
+**Drops Crypto** to aplikacja full-stack do crypto dropsów z integracją Twitch OAuth.
+
+---
+
+## 📄 License
+
+MIT
