@@ -3,14 +3,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List
 
 from dotenv import load_dotenv
-from telegram import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    KeyboardButton,
-    ReplyKeyboardMarkup,
-    Update,
-    WebAppInfo,
-)
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     Application,
     CallbackQueryHandler,
@@ -52,20 +45,32 @@ class Profile:
 profiles: Dict[int, Profile] = {}
 
 
+def _https_or_none(url: str | None) -> str | None:
+    if not url:
+        return None
+    if url.startswith("https://"):
+        return url
+    # Telegram inline button не принимает http — вернем None и покажем текстовую ссылку
+    return None
+
+
 def get_profile(user_id: int, username: str | None) -> Profile:
     if user_id not in profiles:
         profiles[user_id] = Profile(username=username or f"user_{user_id}")
     return profiles[user_id]
 
 
-def webapp_keyboard() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(
-        [
-            [KeyboardButton(text="Открыть", web_app=WebAppInfo(url=FRONTEND_URL))],
-            [KeyboardButton(text="Авторизоваться в Kick", url=f"{BACKEND_URL}/auth/kick/start")],
-        ],
-        resize_keyboard=True,
-    )
+def action_keyboard() -> InlineKeyboardMarkup | None:
+    open_url = _https_or_none(FRONTEND_URL)
+    kick_url = _https_or_none(f"{BACKEND_URL}/auth/kick/start")
+    buttons = []
+    if open_url:
+        buttons.append(InlineKeyboardButton(text="Открыть", url=open_url))
+    if kick_url:
+        buttons.append(InlineKeyboardButton(text="Авторизоваться в Kick", url=kick_url))
+    if not buttons:
+        return None
+    return InlineKeyboardMarkup([buttons])
 
 
 def profile_keyboard(profile: Profile) -> InlineKeyboardMarkup:
@@ -125,18 +130,20 @@ def profile_message(profile: Profile) -> str:
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
     profile = get_profile(user.id, user.username)
-    await update.message.reply_text(
-        "Привет! Это минимальный бот для наград. Используй /profile для просмотра профиля.",
-        reply_markup=webapp_keyboard(),
-    )
+    markup = action_keyboard()
+    text_intro = "Привет! Это минимальный бот для наград. Используй /profile для просмотра профиля."
+    if not markup:
+        text_intro += "\n\n⚠️ Задай публичные https ссылки в переменных FRONTEND_URL и BACKEND_URL, чтобы кнопки работали."
+    await update.message.reply_text(text_intro, reply_markup=markup)
     await send_profile(update, context, profile)
 
 
 async def send_profile(update: Update, context: ContextTypes.DEFAULT_TYPE, profile: Profile) -> None:
     message_func = update.effective_message.reply_html if update.effective_message else update.callback_query.edit_message_text
+    markup = action_keyboard()
     await message_func(
         profile_message(profile),
-        reply_markup=profile_keyboard(profile),
+        reply_markup=markup,
     )
 
 
