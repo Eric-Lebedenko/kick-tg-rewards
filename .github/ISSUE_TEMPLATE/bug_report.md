@@ -1,7 +1,10 @@
 ---
 name: Bug report
 about: Describe a problem to help us fix it
+title: ''
 labels: bug
+assignees: ''
+
 ---
 
 **Summary**
