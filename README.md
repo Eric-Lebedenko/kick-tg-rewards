@@ -1,14 +1,18 @@
-# Twitch/Kick Rewards — прототип
+# Twitch/Kick Rewards — прототип (RU/EN/DE)
 
 Минимальный стек: FastAPI (OAuth Kick/Twitch) + SQLModel/SQLite, статичный фронт профиля, телеграм-бот. Порты по умолчанию: API `8000`, фронт `8001`.
 
-## Что внутри
+Minimal stack: FastAPI (Kick/Twitch OAuth) + SQLModel/SQLite, static profile front-end, Telegram bot. Default ports: API `8000`, front `8001`.
+
+Minimaler Stack: FastAPI (Kick/Twitch OAuth) + SQLModel/SQLite, statische Profil-UI, Telegram-Bot. Standard-Ports: API `8000`, Frontend `8001`.
+
+## Что внутри / What’s inside / Was ist drin
 - `backend-python/` — FastAPI: PKCE OAuth Kick, OAuth Twitch, SQLModel + SQLite (User, AuthToken, Follow, steam_trade_link), моковые rewards, health.
-- `backend-csharp/` — ASP.NET Core minimal API (опционально): health + rewards (in-memory).
-- `frontend/` — статичная страница профиля: Kick/Twitch карточки, Steam trade link, статус участия, локализация RU/EN, переключение темы, список отслеживаемых.
+- `backend-csharp/` — ASP.NET Core minimal API (optional): health + rewards (in-memory).
+- `frontend/` — статичная страница профиля: Kick/Twitch карточки, Steam trade link, статус участия, локализация RU/EN/DE, переключение темы, список отслеживаемых.
 - `bot/` — Telegram-бот (python-telegram-bot) с кнопками «Открыть» (WebApp) и «Авторизоваться в Kick».
 
-## Запуск локально
+## Запуск локально / Run locally / Lokal starten
 ### Python API
 ```bash
 cd backend-python
@@ -46,7 +50,7 @@ dotnet run --urls "http://localhost:5000"
 ```
 Проверка: `http://localhost:5000/health`.
 
-## Основные эндпоинты (Python)
+## Основные эндпоинты (Python) / Key endpoints
 - `GET /health`
 - `GET/POST /rewards`, `GET/DELETE /rewards/{id}` — моковые награды
 - `GET /auth/kick/start`, `GET /auth/kick/callback` — PKCE OAuth Kick, сохраняет профиль/токены, редиректит на FRONTEND_URL с `user_id`
@@ -54,7 +58,7 @@ dotnet run --urls "http://localhost:5000"
 - `GET /steam/link`, `POST /steam/link` — хранение Steam trade link в БД (по `user_id`)
 - `GET /streamers/following` — отдаёт сохранённые подписки (Follow) для пользователя; фронт добавляет фолбек из локальных Kick/Twitch аккаунтов
 
-## Настройка Kick OAuth
+## Настройка Kick OAuth / Kick OAuth setup
 `backend-python/.env`:
 ```
 KICK_CLIENT_ID=...
@@ -68,7 +72,7 @@ FRONTEND_URL=http://localhost:8001
 ```
 Redirect URI в консоли Kick должен совпадать точно. После Allow редирект на FRONTEND_URL с параметрами профиля и `user_id`.
 
-## Настройка Twitch OAuth
+## Настройка Twitch OAuth / Twitch OAuth setup
 `backend-python/.env`:
 ```
 TWITCH_CLIENT_ID=...
@@ -78,8 +82,8 @@ FRONTEND_URL=http://localhost:8001
 ```
 Redirect URI в консоли Twitch — точное совпадение.
 
-## Фронтенд — основные фичи
-- Локализация RU/EN (через `data-i18n`), переключатель языка.
+## Фронтенд — основные фичи / Frontend highlights
+- Локализация RU/EN/DE (через `data-i18n`), переключатель языка.
 - Переключение темы (dark/light), состояние хранится в localStorage.
 - Карточки Kick/Twitch: аватар, ник, кнопка подключить/отвязать; состояние берётся из redirect-параметров и localStorage.
 - Steam trade link: ввод/копирование/удаление, синхронизация в API + localStorage.
