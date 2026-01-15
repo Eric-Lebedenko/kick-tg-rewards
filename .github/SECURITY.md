@@ -1,7 +1,7 @@
 # Security Policy
 
 ## Reporting
-- Please report vulnerabilities privately to @Eric-Lebedenko.
+- Please report vulnerabilities privately to [@Eric-Lebedenko](https://github.com/Eric-Lebedenko).
 - Do not open public issues for security reports.
 - Provide: affected endpoints/flows, reproduction steps, expected/actual behavior, impact.
 
