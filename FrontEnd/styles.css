@@ -21,6 +21,15 @@ body {
               var(--bg);
   color: var(--text);
 }
+body[data-theme="light"] {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --card-strong: #eef1f6;
+  --text: #111827;
+  --muted: #4b5563;
+  --border: #d1d5db;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
 
 .page {
   min-height: 100vh;
@@ -210,6 +219,12 @@ h1 { margin: 0 0 4px 0; font-size: 26px; }
   align-items: center;
 }
 
+.streamer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .empty-state {
   text-align: center;
   padding: 20px;
@@ -255,6 +270,79 @@ h1 { margin: 0 0 4px 0; font-size: 26px; }
   border-radius: 10px;
   background: var(--card-strong);
 }
+
+.settings-panel {
+  opacity: 0;
+  transform: translateY(8px);
+  max-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease, max-height 0.3s ease;
+}
+.settings-panel.active {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 1000px;
+  pointer-events: auto;
+}
+
+.settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.setting-row:last-child { border-bottom: none; }
+
+.select {
+  background: var(--card-strong);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.switch input { display: none; }
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #556;
+  transition: .2s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .2s;
+  border-radius: 50%;
+}
+
+input:checked + .slider { background-color: var(--accent); }
+input:checked + .slider:before { transform: translateX(22px); }
 
 @media (max-width: 720px) {
   .card-header, .streamer { flex-direction: column; align-items: flex-start; }

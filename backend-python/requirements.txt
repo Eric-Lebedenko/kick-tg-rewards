@@ -2,3 +2,4 @@ fastapi==0.109.0
 uvicorn[standard]==0.25.0
 httpx==0.26.0
 python-dotenv==1.0.1
+sqlmodel==0.0.22

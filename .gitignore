@@ -5,6 +5,8 @@ __pycache__/
 .env
 *.env
 *.env.local
+db.sqlite3
+backend-python/db.sqlite3
 
 # .NET
 bin/

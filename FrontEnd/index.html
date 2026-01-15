@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drops | Morgan's version - Профиль</title>
+  <title data-i18n="page_title">Drops | Morgan's version - Профиль</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -12,129 +12,160 @@
 <body>
   <div class="page">
     <header class="topbar">
-      <div class="logo">Drops | Morgan's version</div>
-      <div class="user">@twitchDrops_gitversionbot</div>
+      <div class="logo" data-i18n="logo">Drops | Morgan's version</div>
+      <div class="user" data-i18n="top_user">@twitchDrops_gitversionbot</div>
     </header>
 
     <main class="content">
-      <h1>Профиль</h1>
+      <h1 data-i18n="profile_title">Профиль</h1>
 
       <section class="card highlight inactive" id="participationCard">
         <div class="card-header">
           <div>
-            <div class="label">Участие в розыгрышах</div>
-            <div class="muted" id="participationText">Вы можете участвовать в розыгрышах</div>
+            <div class="label" data-i18n="participation_label">Участие в розыгрышах</div>
+            <div class="muted" id="participationText" data-i18n="participation_desc">Вы можете участвовать в розыгрышах</div>
           </div>
-          <div class="badge badge-danger" id="participationBadge">Неактивно</div>
+          <div class="badge badge-danger" id="participationBadge" data-i18n="participation_badge_inactive">Неактивно</div>
         </div>
       </section>
 
       <section class="card">
         <div class="card-header">
           <div>
-            <div class="label">Kick аккаунт</div>
+            <div class="label" data-i18n="kick_label">Kick аккаунт</div>
             <div class="account">
-              <img src="https://i.pravatar.cc/64?img=11" alt="avatar">
+              <img id="kickAvatar" src="https://i.pravatar.cc/64?img=11" alt="avatar">
               <div>
-                <div class="title" id="kickName">Kick не подключен</div>
+                <div class="title" id="kickName" data-i18n="kick_not_connected">Kick не подключен</div>
                 <div class="muted" id="kickEmail">@—</div>
               </div>
             </div>
           </div>
-          <a class="btn btn-success btn-connect btn-connect-solid ghost" id="kickAction" href="http://localhost:8000/auth/kick/start">Подключить</a>
+          <a class="btn btn-success btn-connect btn-connect-solid ghost" id="kickAction" href="http://localhost:8000/auth/kick/start" data-i18n="btn_connect">Подключить</a>
         </div>
       </section>
 
       <section class="card">
         <div class="card-header">
           <div>
-            <div class="label">Twitch аккаунт</div>
+            <div class="label" data-i18n="twitch_label">Twitch аккаунт</div>
             <div class="account">
-              <img src="https://i.pravatar.cc/64?img=11" alt="avatar">
+              <img id="twitchAvatar" src="https://i.pravatar.cc/64?img=11" alt="avatar">
               <div>
-                <div class="title" id="twitchName">Twitch не подключен</div>
+                <div class="title" id="twitchName" data-i18n="twitch_not_connected">Twitch не подключен</div>
                 <div class="muted" id="twitchHandle">@—</div>
               </div>
             </div>
           </div>
-          <button class="btn btn-success btn-connect btn-connect-solid ghost" id="twitchAction" href="http://localhost:8000/auth/twitch/start">Подключить</button>
+          <a class="btn btn-success btn-connect btn-connect-solid ghost" id="twitchAction" href="http://localhost:8000/auth/twitch/start" data-i18n="btn_connect">Подключить</a>
         </div>
       </section>
 
       <section class="card">
         <div class="card-header">
           <div>
-            <div class="label">Ссылка обмена Steam</div>
-            <div class="muted">Профиль и инвентарь должны быть открыты в настройках приватности Steam.</div>
+            <div class="label" data-i18n="steam_label">Ссылка обмена Steam</div>
+            <div class="muted" data-i18n="steam_desc">Профиль и инвентарь должны быть открыты в настройках приватности Steam.</div>
           </div>
-          <button class="icon-btn" id="copyLink" title="Скопировать">
+          <button class="icon-btn" id="copyLink" title="Скопировать" data-i18n="btn_copy">
             <span>⧉</span>
           </button>
         </div>
         <div class="input-row">
-          <input id="steamLink" type="text" value="" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=...">
+          <input id="steamLink" type="text" value="" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=..." aria-label="Steam trade link">
         </div>
         <div class="actions">
-          <button class="btn" id="steamEdit">Сохранить</button>
-          <button class="btn btn-danger" id="steamDelete">Удалить</button>
+          <button class="btn" id="steamEdit" data-i18n="btn_save">Сохранить</button>
+          <button class="btn btn-danger" id="steamDelete" data-i18n="btn_delete">Удалить</button>
         </div>
       </section>
 
       <section class="stats">
         <div class="stat-card">
           <div class="stat-value">0</div>
-          <div class="muted">Призов</div>
+          <div class="muted" data-i18n="stat_prizes">Призов</div>
         </div>
         <div class="stat-card">
           <div class="stat-value">$0.00</div>
-          <div class="muted">Суммарно</div>
+          <div class="muted" data-i18n="stat_total">Суммарно</div>
         </div>
         <div class="stat-card">
           <div class="stat-value">0</div>
-          <div class="muted">За месяц</div>
+          <div class="muted" data-i18n="stat_month">За месяц</div>
         </div>
       </section>
 
       <section class="card">
         <div class="section-header">
-          <div class="label">Отслеживаемые стримеры</div>
-          <a class="muted" href="#">Показать все →</a>
+          <div class="label" data-i18n="streamers_label">Отслеживаемые стримеры</div>
+          <a class="muted" href="#" data-i18n="show_all">Показать все →</a>
         </div>
-        <div class="streamer">
-          <div class="streamer-meta">
-            <img src="https://i.pravatar.cc/48?img=55" alt="streamer">
-            <div>
-              <div class="title">Signaturk4</div>
-              <div class="muted">352 подписчика</div>
-            </div>
-          </div>
-          <button class="icon-btn" title="Управление">👤</button>
+        <div id="followList" class="streamer-list">
         </div>
       </section>
 
       <section class="card">
         <div class="section-header">
-          <div class="label">Мои призы</div>
-          <a class="muted" href="#">Показать все →</a>
+          <div class="label" data-i18n="prizes_label">Мои призы</div>
+          <a class="muted" href="#" data-i18n="show_all">Показать все →</a>
         </div>
         <div class="empty-state">
-          <div class="title">Нет призов</div>
-          <div class="muted">У вас пока нет полученных призов</div>
+          <div class="title" data-i18n="prizes_empty_title">Нет призов</div>
+          <div class="muted" data-i18n="prizes_empty_desc">У вас пока нет полученных призов</div>
+        </div>
+      </section>
+
+      <section class="card settings-panel" id="settings">
+        <div class="card-header">
+          <div>
+            <div class="label" data-i18n="settings_title">Настройки</div>
+            <div class="muted" data-i18n="settings_subtitle">Тема, язык, уведомления</div>
+          </div>
+          <button class="btn btn-danger btn-connect btn-connect-solid ghost" id="settingsClose" data-i18n="close_btn">Закрыть</button>
+        </div>
+        <div class="settings-grid">
+          <div class="setting-row">
+            <div>
+              <div class="title" data-i18n="theme_title">Тема</div>
+              <div class="muted" data-i18n="theme_desc">Светлая или тёмная</div>
+            </div>
+            <button class="btn btn-success btn-connect btn-connect-solid ghost" id="themeToggle" data-i18n="theme_toggle">Тёмная</button>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="title" data-i18n="lang_title">Язык</div>
+              <div class="muted" data-i18n="lang_desc">Интерфейс и подписи</div>
+            </div>
+            <select id="localeSelect" class="select">
+              <option value="ru">Русский</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="title" data-i18n="notify_title">Уведомления</div>
+              <div class="muted" data-i18n="notify_desc">Получать апдейты о призах</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="notifyToggle">
+              <span class="slider"></span>
+            </label>
+          </div>
         </div>
       </section>
 
       <nav class="menu">
-        <a class="menu-item" href="#">
+        <a class="menu-item" href="#settings" id="settingsLink">
           <span>⚙️</span>
-          <div class="label">Настройки</div>
+          <div class="label" data-i18n="menu_settings">Настройки</div>
         </a>
         <a class="menu-item" href="https://t.me/realericlmorgan">
           <span>❔</span>
-          <div class="label">Техподдержка</div>
+          <div class="label" data-i18n="menu_support">Техподдержка</div>
         </a>
         <a class="menu-item" href="https://t.me/realericlmorgan">
           <span>📡</span>
-          <div class="label">Начать стримить</div>
+          <div class="label" data-i18n="menu_stream">Начать стримить</div>
         </a>
       </nav>
     </main>
