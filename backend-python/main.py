@@ -1,9 +1,10 @@
 import os
 import base64
 import hashlib
+import logging
 import secrets
 from pathlib import Path
-from typing import Dict, List, Set, Optional
+from typing import Dict, List, Set, Optional, Protocol
 from datetime import datetime, timedelta
 from uuid import UUID, uuid4
 from urllib.parse import urlencode
@@ -15,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
 from sqlmodel import Field as SQLField, Session, SQLModel, create_engine, select
-from sqlalchemy import delete
+from sqlalchemy import delete, UniqueConstraint
 
 # Ensure .env is loaded relative to this file, even if CWD differs
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
@@ -46,6 +47,14 @@ DB_URL = os.environ.get("DB_URL", "sqlite:///./db.sqlite3")
 states: Set[str] = set()
 pkce_verifiers: Dict[str, str] = {}
 engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if DB_URL.startswith("sqlite") else {})
+
+logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"))
+logger = logging.getLogger("python-api")
+
+FOLLOWING_CACHE_TTL_SECONDS = int(os.environ.get("FOLLOWING_CACHE_TTL_SECONDS", "300"))
+FOLLOWING_SYNC_MIN_INTERVAL_SECONDS = int(os.environ.get("FOLLOWING_SYNC_MIN_INTERVAL_SECONDS", "30"))
+
+_last_manual_sync_by_user_id: Dict[int, datetime] = {}
 
 
 class RewardCreate(BaseModel):
@@ -89,6 +98,44 @@ class FollowedStreamer(BaseModel):
     display_name: str
     followers: int | None = None
     avatar: str | None = None
+
+
+class Following(SQLModel, table=True):
+    __table_args__ = (
+        UniqueConstraint("user_id", "provider", "streamer_id", name="uq_following_user_provider_streamer"),
+    )
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    user_id: int = SQLField(foreign_key="user.id", index=True)
+    provider: str = SQLField(index=True)
+    streamer_id: str = SQLField(index=True)
+    name: str
+    avatar: Optional[str] = None
+    is_live: Optional[bool] = None
+    created_at: datetime = SQLField(default_factory=datetime.utcnow)
+    updated_at: datetime = SQLField(default_factory=datetime.utcnow, index=True)
+
+
+class FollowingSyncState(SQLModel, table=True):
+    __table_args__ = (
+        UniqueConstraint("user_id", "provider", name="uq_following_sync_user_provider"),
+    )
+
+    id: Optional[int] = SQLField(default=None, primary_key=True)
+    user_id: int = SQLField(foreign_key="user.id", index=True)
+    provider: str = SQLField(index=True)
+    last_synced_at: Optional[datetime] = SQLField(default=None, index=True)
+    last_error: Optional[str] = None
+    updated_at: datetime = SQLField(default_factory=datetime.utcnow)
+
+
+class FollowingOut(BaseModel):
+    streamer_id: str
+    name: str
+    avatar: str | None = None
+    platform: str
+    is_live: bool | None = None
+    updated_at: datetime
 
 
 class Follow(SQLModel, table=True):
@@ -140,20 +187,265 @@ def upsert_token(session: Session, user: User, provider: str, token_data: Dict):
     token.expires_at = expires_at
     session.commit()
 
-def replace_follows(session: Session, user: User, provider: str, entries: List[Dict]):
-    session.exec(delete(Follow).where(Follow.user_id == user.id, Follow.provider == provider))
-    session.commit()
-    for e in entries:
-        follow = Follow(
-            user_id=user.id,
-            provider=provider,
-            login=e.get("login", ""),
-            display_name=e.get("display_name", ""),
-            followers=e.get("followers"),
-            avatar=e.get("avatar"),
+
+def get_user_or_404(session: Session, user_id: int | None) -> User:
+    db_user = (
+        session.exec(select(User).where(User.id == user_id)).first()
+        if user_id
+        else session.exec(select(User)).first()
+    )
+    if not db_user:
+        raise HTTPException(status_code=401, detail="User is not authorized (missing user_id)")
+    return db_user
+
+
+def get_token(session: Session, user: User, provider: str) -> AuthToken | None:
+    return session.exec(
+        select(AuthToken).where(AuthToken.user_id == user.id, AuthToken.provider == provider)
+    ).first()
+
+
+def get_sync_state(session: Session, user: User, provider: str) -> FollowingSyncState:
+    state = session.exec(
+        select(FollowingSyncState).where(
+            FollowingSyncState.user_id == user.id,
+            FollowingSyncState.provider == provider,
         )
-        session.add(follow)
+    ).first()
+    if not state:
+        state = FollowingSyncState(user_id=user.id, provider=provider)
+        session.add(state)
+        session.commit()
+        session.refresh(state)
+    return state
+
+
+def get_cached_following(session: Session, user: User, provider: str) -> List[FollowingOut]:
+    rows = session.exec(
+        select(Following)
+        .where(Following.user_id == user.id, Following.provider == provider)
+        .order_by(Following.name.asc())
+    ).all()
+    return [
+        FollowingOut(
+            streamer_id=r.streamer_id,
+            name=r.name,
+            avatar=r.avatar,
+            platform=r.provider,
+            is_live=r.is_live,
+            updated_at=r.updated_at,
+        )
+        for r in rows
+    ]
+
+
+def replace_cached_following(session: Session, user: User, provider: str, items: List[FollowingOut]) -> None:
+    now = datetime.utcnow()
+    session.exec(delete(Following).where(Following.user_id == user.id, Following.provider == provider))
+    for it in items:
+        session.add(
+            Following(
+                user_id=user.id,
+                provider=provider,
+                streamer_id=it.streamer_id,
+                name=it.name,
+                avatar=it.avatar,
+                is_live=it.is_live,
+                created_at=now,
+                updated_at=now,
+            )
+        )
     session.commit()
+
+
+class FollowingProvider(Protocol):
+    provider: str
+
+    async def fetch_following(self, token: AuthToken) -> List[FollowingOut]:
+        ...
+
+
+async def _http_get_json(url: str, headers: Dict[str, str], params: Dict[str, str] | None = None) -> Dict:
+    async with httpx.AsyncClient(timeout=20) as client:
+        resp = await client.get(url, headers=headers, params=params)
+        if resp.status_code != 200:
+            raise HTTPException(status_code=502, detail=f"Provider request failed: {url} ({resp.status_code})")
+        return resp.json()
+
+
+class TwitchFollowingProvider:
+    provider = "twitch"
+
+    async def fetch_following(self, token: AuthToken) -> List[FollowingOut]:
+        if not token.access_token:
+            return []
+
+        # Need Twitch user id to query followed channels. We reuse /helix/users.
+        headers = {
+            "Authorization": f"Bearer {token.access_token}",
+            "Client-Id": TWITCH_CLIENT_ID or "",
+        }
+
+        me_payload = await _http_get_json("https://api.twitch.tv/helix/users", headers=headers)
+        me = (me_payload.get("data") or [None])[0] or {}
+        user_id = me.get("id")
+        if not user_id:
+            return []
+
+        followed = []
+        cursor = None
+        while True:
+            params = {"user_id": str(user_id), "first": "100"}
+            if cursor:
+                params["after"] = cursor
+            payload = await _http_get_json(
+                "https://api.twitch.tv/helix/channels/followed",
+                headers=headers,
+                params=params,
+            )
+            data = payload.get("data") or []
+            for row in data:
+                followed.append(
+                    {
+                        "id": str(row.get("broadcaster_id") or ""),
+                        "name": row.get("broadcaster_name") or row.get("broadcaster_login") or "",
+                    }
+                )
+            cursor = ((payload.get("pagination") or {}).get("cursor"))
+            if not cursor or not data:
+                break
+
+        ids = [x["id"] for x in followed if x.get("id")]
+        avatar_by_id: Dict[str, str] = {}
+        for i in range(0, len(ids), 100):
+            chunk = ids[i : i + 100]
+            params = [("id", cid) for cid in chunk]
+            async with httpx.AsyncClient(timeout=20) as client:
+                resp = await client.get("https://api.twitch.tv/helix/users", headers=headers, params=params)
+                if resp.status_code == 200:
+                    pl = resp.json()
+                    for u in pl.get("data") or []:
+                        uid = str(u.get("id") or "")
+                        if uid:
+                            avatar_by_id[uid] = u.get("profile_image_url") or ""
+
+        live_ids: Set[str] = set()
+        for i in range(0, len(ids), 100):
+            chunk = ids[i : i + 100]
+            params = [("user_id", cid) for cid in chunk]
+            async with httpx.AsyncClient(timeout=20) as client:
+                resp = await client.get("https://api.twitch.tv/helix/streams", headers=headers, params=params)
+                if resp.status_code == 200:
+                    pl = resp.json()
+                    for s in pl.get("data") or []:
+                        sid = str(s.get("user_id") or "")
+                        if sid:
+                            live_ids.add(sid)
+
+        now = datetime.utcnow()
+        out: List[FollowingOut] = []
+        for x in followed:
+            sid = x.get("id") or ""
+            name = x.get("name") or sid
+            if not sid:
+                continue
+            out.append(
+                FollowingOut(
+                    streamer_id=sid,
+                    name=name,
+                    avatar=avatar_by_id.get(sid) or None,
+                    platform=self.provider,
+                    is_live=(sid in live_ids) if ids else None,
+                    updated_at=now,
+                )
+            )
+        return out
+
+
+class KickFollowingProvider:
+    provider = "kick"
+
+    async def fetch_following(self, token: AuthToken) -> List[FollowingOut]:
+        if not token.access_token:
+            return []
+
+        headers = {
+            "Authorization": f"Bearer {token.access_token}",
+            "Client-Id": KICK_CLIENT_ID or "",
+            "accept": "application/json",
+        }
+
+        # Kick public API appears to require auth even for many endpoints; we try a few candidates.
+        candidates = [
+            "https://api.kick.com/public/v1/channels/following",
+            "https://api.kick.com/public/v1/users/following",
+        ]
+
+        payload = None
+        for url in candidates:
+            try:
+                payload = await _http_get_json(url, headers=headers)
+                break
+            except HTTPException as e:
+                # Keep trying next candidate; last one will bubble up.
+                last = e
+                payload = None
+        if payload is None:
+            raise last  # type: ignore[name-defined]
+
+        data = payload.get("data")
+        items = data if isinstance(data, list) else []
+        now = datetime.utcnow()
+
+        out: List[FollowingOut] = []
+        for row in items:
+            if not isinstance(row, dict):
+                continue
+            # Be tolerant: different shapes possible.
+            ch = row.get("channel") if isinstance(row.get("channel"), dict) else row
+            streamer_id = str(
+                ch.get("id")
+                or ch.get("channel_id")
+                or ch.get("user_id")
+                or row.get("id")
+                or ""
+            )
+            name = (
+                ch.get("name")
+                or ch.get("slug")
+                or ch.get("username")
+                or ch.get("user")
+                or row.get("name")
+                or ""
+            )
+            avatar = (
+                ch.get("profile_picture")
+                or ch.get("avatar")
+                or ch.get("image")
+                or row.get("profile_picture")
+                or None
+            )
+            is_live = None
+            if "is_live" in ch:
+                is_live = bool(ch.get("is_live"))
+            elif isinstance(ch.get("livestream"), dict):
+                is_live = True
+
+            if not streamer_id and name:
+                streamer_id = name
+            if not streamer_id:
+                continue
+            out.append(
+                FollowingOut(
+                    streamer_id=streamer_id,
+                    name=name or streamer_id,
+                    avatar=avatar,
+                    platform=self.provider,
+                    is_live=is_live,
+                    updated_at=now,
+                )
+            )
+        return out
 
 def ensure_twitch_config() -> None:
     if not ENABLE_TWITCH:
@@ -280,21 +572,93 @@ def set_steam_link(payload: SteamLinkRequest, user_id: int | None = None, sessio
 
 
 @app.get("/streamers/following")
-def get_following(user_id: int | None = None, session: Session = Depends(get_session)) -> List[FollowedStreamer]:
-    db_user = session.exec(select(User).where(User.id == user_id)).first() if user_id else session.exec(select(User)).first()
-    if not db_user:
-        return []
-    follows = session.exec(select(Follow).where(Follow.user_id == db_user.id)).all()
-    return [
-        FollowedStreamer(
-            platform=f.provider,
-            login=f.login,
-            display_name=f.display_name,
-            followers=f.followers,
-            avatar=f.avatar,
+async def get_following(user_id: int | None = None, session: Session = Depends(get_session)) -> List[FollowingOut]:
+    user = get_user_or_404(session, user_id)
+
+    providers: List[FollowingProvider] = []
+    if get_token(session, user, "twitch"):
+        providers.append(TwitchFollowingProvider())
+    if get_token(session, user, "kick"):
+        providers.append(KickFollowingProvider())
+
+    combined: List[FollowingOut] = []
+    for p in providers:
+        state = get_sync_state(session, user, p.provider)
+        cached = get_cached_following(session, user, p.provider)
+        fresh_enough = (
+            state.last_synced_at is not None
+            and (datetime.utcnow() - state.last_synced_at).total_seconds() <= FOLLOWING_CACHE_TTL_SECONDS
         )
-        for f in follows
-    ]
+
+        if fresh_enough and cached:
+            combined.extend(cached)
+            continue
+
+        token = get_token(session, user, p.provider)
+        if not token:
+            continue
+
+        try:
+            logger.info("following.fetch start provider=%s user_id=%s", p.provider, user.id)
+            items = await p.fetch_following(token)
+            replace_cached_following(session, user, p.provider, items)
+
+            state.last_synced_at = datetime.utcnow()
+            state.last_error = None
+            state.updated_at = datetime.utcnow()
+            session.add(state)
+            session.commit()
+
+            combined.extend(items)
+        except Exception as e:
+            logger.warning("following.fetch failed provider=%s user_id=%s err=%s", p.provider, user.id, str(e))
+            state.last_error = str(e)[:500]
+            state.updated_at = datetime.utcnow()
+            session.add(state)
+            session.commit()
+            # fallback to cached
+            combined.extend(cached)
+
+    combined.sort(key=lambda x: (x.platform, x.name))
+    return combined
+
+
+@app.post("/streamers/following/sync")
+async def sync_following(user_id: int | None = None, session: Session = Depends(get_session)):
+    user = get_user_or_404(session, user_id)
+    now = datetime.utcnow()
+
+    last = _last_manual_sync_by_user_id.get(user.id)
+    if last and (now - last).total_seconds() < FOLLOWING_SYNC_MIN_INTERVAL_SECONDS:
+        raise HTTPException(status_code=429, detail="Too many sync requests. Try again later.")
+    _last_manual_sync_by_user_id[user.id] = now
+
+    results = {}
+
+    for provider in [TwitchFollowingProvider(), KickFollowingProvider()]:
+        token = get_token(session, user, provider.provider)
+        if not token:
+            results[provider.provider] = {"ok": False, "skipped": True, "reason": "not_connected"}
+            continue
+        try:
+            items = await provider.fetch_following(token)
+            replace_cached_following(session, user, provider.provider, items)
+            state = get_sync_state(session, user, provider.provider)
+            state.last_synced_at = datetime.utcnow()
+            state.last_error = None
+            state.updated_at = datetime.utcnow()
+            session.add(state)
+            session.commit()
+            results[provider.provider] = {"ok": True, "count": len(items)}
+        except Exception as e:
+            state = get_sync_state(session, user, provider.provider)
+            state.last_error = str(e)[:500]
+            state.updated_at = datetime.utcnow()
+            session.add(state)
+            session.commit()
+            results[provider.provider] = {"ok": False, "error": str(e)[:200]}
+
+    return {"ok": True, "results": results, "cached_ttl_s": FOLLOWING_CACHE_TTL_SECONDS}
 
 
 @app.get("/auth/twitch/start")
@@ -307,7 +671,7 @@ async def auth_twitch_start():
             "client_id": TWITCH_CLIENT_ID,
             "redirect_uri": TWITCH_REDIRECT_URI,
             "response_type": "code",
-            "scope": "user:read:email",
+            "scope": "user:read:email user:read:follows",
             "state": state,
         }
     )
@@ -341,19 +705,6 @@ async def auth_twitch_callback(code: str | None = None, state: str | None = None
     session.commit()
     session.refresh(db_user)
     upsert_token(session, db_user, "twitch", token_data)
-    replace_follows(
-        session,
-        db_user,
-        "twitch",
-        [
-          {
-            "login": user.get("login") or "twitch_user",
-            "display_name": user.get("display_name") or "twitch_user",
-            "followers": 1200,
-            "avatar": user.get("avatar"),
-          }
-        ],
-    )
     redirect_params = {
         "twitch_user": user.get("display_name") or user.get("login") or "",
         "twitch_id": user.get("id") or "",
@@ -434,19 +785,6 @@ async def auth_kick_callback(code: str | None = None, state: str | None = None, 
     session.commit()
     session.refresh(db_user)
     upsert_token(session, db_user, "kick", token_data)
-    replace_follows(
-        session,
-        db_user,
-        "kick",
-        [
-          {
-            "login": kick_display or "kick_user",
-            "display_name": kick_display or "kick_user",
-            "followers": 352,
-            "avatar": avatar,
-          }
-        ],
-    )
     user_data = None
     if isinstance(user, dict):
         if isinstance(user.get("data"), list) and user["data"]:

@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const NOTIFY_KEY = "notifyPrefs";
 
   const followList = document.getElementById("followList");
+  const followStatus = document.getElementById("followStatus");
+  const followRefresh = document.getElementById("followRefresh");
   const copyBtn = document.getElementById("copyLink");
   const linkInput = document.getElementById("steamLink");
   const kickAction = document.getElementById("kickAction");
@@ -59,8 +61,14 @@ document.addEventListener("DOMContentLoaded", () => {
       stat_total: "Суммарно",
       stat_month: "За месяц",
       streamers_label: "Отслеживаемые стримеры",
+      streamers_refresh: "Обновить",
       streamers_empty_title: "Нет данных",
       streamers_empty_desc: "Отслеживаемых стримеров пока нет",
+      streamers_connect_needed: "Подключите Kick/Twitch, чтобы загрузить реальные подписки",
+      streamers_loading: "Загрузка списка подписок…",
+      streamers_error: "Не удалось загрузить список. Попробуйте ещё раз.",
+      streamers_syncing: "Синхронизация…",
+      streamers_synced: "Синхронизировано",
       followers_word: "подписчиков",
       show_all: "Показать все →",
       prizes_label: "Мои призы",
@@ -105,8 +113,14 @@ document.addEventListener("DOMContentLoaded", () => {
       stat_total: "Total",
       stat_month: "This month",
       streamers_label: "Followed streamers",
+      streamers_refresh: "Refresh",
       streamers_empty_title: "No data",
       streamers_empty_desc: "You have no followed streamers yet",
+      streamers_connect_needed: "Connect Kick/Twitch to load real following",
+      streamers_loading: "Loading following…",
+      streamers_error: "Failed to load. Please try again.",
+      streamers_syncing: "Syncing…",
+      streamers_synced: "Synced",
       followers_word: "followers",
       show_all: "Show all →",
       prizes_label: "My prizes",
@@ -354,17 +368,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Followed streamers ---
-  const localFollowFallback = () => {
-    const res = [];
-    const kick = getProfile(KICK_KEY);
-    if (kick?.user) {
-      res.push({ platform: "kick", login: kick.user, display_name: kick.user, followers: 0, avatar: kick.avatar });
-    }
-    const tw = getProfile(TWITCH_KEY);
-    if (tw?.user) {
-      res.push({ platform: "twitch", login: tw.user, display_name: tw.user, followers: 0, avatar: tw.avatar });
-    }
-    return res;
+  const setFollowStatus = (text) => {
+    if (!followStatus) return;
+    followStatus.textContent = text || "";
   };
 
   const renderFollowList = (items) => {
@@ -380,12 +386,14 @@ document.addEventListener("DOMContentLoaded", () => {
     items.forEach((item) => {
       const row = document.createElement("div");
       row.className = "streamer";
+      const live = item.is_live ? "LIVE" : "";
+      const updated = item.updated_at ? new Date(item.updated_at).toLocaleString() : "";
       row.innerHTML = `
         <div class="streamer-meta">
-          <img src="${item.avatar || "https://i.pravatar.cc/48?img=55"}" alt="${item.display_name || item.login}">
+          <img src="${item.avatar || "https://i.pravatar.cc/48?img=55"}" alt="${item.name || item.streamer_id}">
           <div>
-            <div class="title">${item.display_name || item.login}</div>
-            <div class="muted">${item.platform} · ${item.followers ?? 0} ${t("followers_word")}</div>
+            <div class="title">${item.name || item.streamer_id} ${live ? `<span class="badge badge-danger" style="margin-left:8px;">${live}</span>` : ""}</div>
+            <div class="muted">${item.platform}${updated ? ` · ${updated}` : ""}</div>
           </div>
         </div>
         <button class="icon-btn" title="Управление">👤</button>
@@ -396,24 +404,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const loadFollows = async () => {
     try {
+      const hasKick = !!getProfile(KICK_KEY)?.user;
+      const hasTwitch = !!getProfile(TWITCH_KEY)?.user;
+      if (!hasKick && !hasTwitch) {
+        setFollowStatus(t("streamers_connect_needed"));
+        renderFollowList([]);
+        return;
+      }
+      setFollowStatus(t("streamers_loading"));
+
       const userId = localStorage.getItem(USER_ID_KEY);
       const url = userId ? `${BACKEND_URL}/streamers/following?user_id=${userId}` : `${BACKEND_URL}/streamers/following`;
       const resp = await fetch(url);
-      const base = resp.ok ? await resp.json() : [];
-      const fallback = localFollowFallback();
-      const merged = [...(Array.isArray(base) ? base : [])];
-      const keys = new Set(merged.map((x) => `${x.platform}:${x.login}`));
-      fallback.forEach((x) => {
-        const k = `${x.platform}:${x.login}`;
-        if (!keys.has(k)) merged.push(x);
-      });
-      renderFollowList(merged.length ? merged : fallback);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const base = await resp.json();
+      const items = Array.isArray(base) ? base : [];
+      setFollowStatus("");
+      renderFollowList(items);
     } catch (e) {
       console.warn("Не удалось загрузить отслеживаемых стримеров", e);
-      renderFollowList(localFollowFallback());
+      setFollowStatus(t("streamers_error"));
+      renderFollowList([]);
     }
   };
   loadFollows();
+
+  const syncFollows = async () => {
+    try {
+      setFollowStatus(t("streamers_syncing"));
+      const userId = localStorage.getItem(USER_ID_KEY);
+      const url = userId ? `${BACKEND_URL}/streamers/following/sync?user_id=${userId}` : `${BACKEND_URL}/streamers/following/sync`;
+      const resp = await fetch(url, { method: "POST" });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      setFollowStatus(t("streamers_synced"));
+      await loadFollows();
+    } catch (e) {
+      console.warn("Не удалось синхронизировать подписки", e);
+      setFollowStatus(t("streamers_error"));
+    }
+  };
+  followRefresh?.addEventListener("click", (e) => {
+    e.preventDefault();
+    syncFollows();
+  });
 
   // --- Settings panel open/close ---
   const showSettings = () => {

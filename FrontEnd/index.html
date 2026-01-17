@@ -98,8 +98,12 @@
       <section class="card">
         <div class="section-header">
           <div class="label" data-i18n="streamers_label">Отслеживаемые стримеры</div>
-          <a class="muted" href="#" data-i18n="show_all">Показать все →</a>
+          <div class="follow-actions">
+            <button class="btn btn-primary ghost" id="followRefresh" type="button" data-i18n="streamers_refresh">Обновить</button>
+            <a class="muted" href="#" data-i18n="show_all">Показать все →</a>
+          </div>
         </div>
+        <div class="muted" id="followStatus" style="margin-bottom: 10px;"></div>
         <div id="followList" class="streamer-list">
         </div>
       </section>
@@ -136,7 +140,7 @@
               <div class="title" data-i18n="lang_title">Язык</div>
               <div class="muted" data-i18n="lang_desc">Интерфейс и подписи</div>
             </div>
-            <select id="localeSelect" class="select">
+            <select id="localeSelect" class="select" aria-label="Language">
               <option value="ru">Русский</option>
               <option value="en">English</option>
             </select>
@@ -147,7 +151,7 @@
               <div class="muted" data-i18n="notify_desc">Получать апдейты о призах</div>
             </div>
             <label class="switch">
-              <input type="checkbox" id="notifyToggle">
+              <input type="checkbox" id="notifyToggle" aria-label="Notifications">
               <span class="slider"></span>
             </label>
           </div>
